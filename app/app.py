@@ -1,10 +1,13 @@
 from flask import Flask, request
+from flask_cors import CORS
 from routing import *
 from graph import *
+from cctv import *
 import os
 import pickle
 
 app = Flask('gohomesafe')
+cors = CORS(app)
 
 
 def startup():
@@ -29,17 +32,27 @@ def hello_world():
 
 
 @app.route("/route")
-def routing():
+def routing(fastest=False):
     args = request.args
     if validate_route_args(args):
         route_coordinates = calculate_route(graph,
                                             [float(args.get('start_lat')), float(args.get('start_lon'))],
-                                            [float(args.get('end_lat')), float(args.get('end_lon'))])
+                                            [float(args.get('end_lat')), float(args.get('end_lon'))],
+                                            fastest)
         return route_coordinates
     else:
         print("Error: arguments not correct")
         return "Error"
 
+
+@app.route("/route/fastest")
+def routing_fastest():
+    return routing(True)
+
+
+@app.route("/cctv")
+def cctv_locations():
+    return get_cctv_data()
 
 with app.app_context():
     startup()

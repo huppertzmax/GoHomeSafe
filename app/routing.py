@@ -50,9 +50,24 @@ def get_nodes(graph, coordinates):
     return ox.distance.nearest_nodes(graph, coordinates[0], coordinates[1])
 
 
-def calculate_route(graph, start, end):
+def calculate_route_stats(graph, route):
+    length = 0
+    duration = 0
+    for f,t in zip(route[1:], route[:-1]):
+        data = graph.get_edge_data(f, t)[0]
+        length += data.get('length')
+        duration += data.get('walking_time')
+    return length, duration
+
+
+def calculate_route(graph, start, end, fastest):
     start = get_nodes(graph, start)
     end = get_nodes(graph, end)
-    route = nx.shortest_path(graph, start, end, weight="length")
+    if fastest:
+        route = nx.shortest_path(graph, start, end, weight="length")
+    else:
+        route = nx.shortest_path(graph, start, end, weight="c_weight")
     coordinates = densify_route(graph, route)
-    return {"coordinates": coordinates}
+    length, duration = calculate_route_stats(graph, route)
+    route_type = 'fastest' if fastest else 'safest'
+    return {"coordinates": coordinates, "length": length, "duration": duration, "type": route_type}
