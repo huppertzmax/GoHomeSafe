@@ -16,12 +16,13 @@ def startup():
     file_path = '../graph_daejeon.pkl'
 
     if os.path.exists(file_path):
-        with open('../graph_daejeon.pkl', 'rb') as f:
+        with open(file_path, 'rb') as f:
             graph = pickle.load(f)
+        adjust_graph_weights_cctv(graph)
     else:
         print("Graph file will be created")
         graph = initialize_graph()
-        with open('../graph_daejeon.pkl', 'wb') as f:
+        with open(file_path, 'wb') as f:
             pickle.dump(graph, f)
     print("Graph initialization completed")
 

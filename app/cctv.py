@@ -15,7 +15,7 @@ def request_cctv_locations():
 
 
 def get_cctv_locations_all():
-    return jsonfiy_locations(request_cctv_locations())
+    return list_cctv_coordinates(request_cctv_locations())
 
 
 def get_cctv_locations_area(start_lat, start_lon, end_lat, end_lon):
@@ -26,7 +26,7 @@ def get_cctv_locations_area(start_lat, start_lon, end_lat, end_lon):
     distance_start = geodesic(start, middle).meters
     distance_end = geodesic(end, middle).meters
     distance = distance_start if distance_start <= distance_end else distance_end
-    cctv_locations = list_cctv_coordinates(request_cctv_locations())
+    cctv_locations = get_cctv_locations_all()
 
     cctv_locations = filter_cctvs_in_area(cctv_locations, middle, distance)
     return cctv_locations
