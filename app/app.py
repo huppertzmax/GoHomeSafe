@@ -36,8 +36,8 @@ def routing(fastest=False):
     args = request.args
     if validate_route_args(args):
         route_coordinates = calculate_route(graph,
-                                            [float(args.get('start_lat')), float(args.get('start_lon'))],
-                                            [float(args.get('end_lat')), float(args.get('end_lon'))],
+                                            [float(args.get('start_lon')), float(args.get('start_lat'))],
+                                            [float(args.get('end_lon')), float(args.get('end_lat'))],
                                             fastest)
         return route_coordinates
     else:
@@ -50,9 +50,21 @@ def routing_fastest():
     return routing(True)
 
 
-@app.route("/cctv")
-def cctv_locations():
-    return get_cctv_data()
+@app.route("/cctv/all")
+def cctv_locations_all():
+    return get_cctv_locations_all()
+
+
+@app.route("/cctv/area")
+def cctv_locations_area():
+    args = request.args
+    if validate_route_args(args):
+        return get_cctv_locations_area(float(args.get('start_lat')), float(args.get('start_lon')),
+                                       float(args.get('end_lat')), float(args.get('end_lon')))
+    else:
+        print("Error: arguments not correct")
+        return "Error"
+
 
 with app.app_context():
     startup()
