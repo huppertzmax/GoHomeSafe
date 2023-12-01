@@ -2,18 +2,6 @@ import osmnx as ox
 import networkx as nx
 
 
-def validate_route_args(args):
-    keys_to_check = ["start_lat", "start_lon", "end_lat", "end_lon"]
-    type_check = True
-    key_check = all(key in args for key in keys_to_check)
-    for key in keys_to_check:
-        try:
-            float(args.get(key))
-        except ValueError:
-            type_check = False
-    return key_check and type_check
-
-
 def densify_coordinates(graph, route):
     dense_coordinates = []
     for n1, n2 in zip(route[:-1], route[1:]):
