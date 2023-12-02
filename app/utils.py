@@ -29,3 +29,17 @@ def validate_args(args):
         except ValueError:
             type_check = False
     return key_check and type_check
+
+
+def change_weights(graph, start_node, end_node, key, c1_weight, c2_weight, c3_weight):
+    c1_weight_g = graph[start_node][end_node][key]['c1_weight']
+    c2_weight_g = graph[start_node][end_node][key]['c2_weight']
+    c3_weight_g = graph[start_node][end_node][key]['c3_weight']
+
+    c1_weight_g = c1_weight_g * c1_weight
+    c2_weight_g = c2_weight_g * c2_weight
+    c3_weight_g = c3_weight_g * c3_weight
+
+    graph[start_node][end_node][key]['c1_weight'] = c1_weight_g
+    graph[start_node][end_node][key]['c2_weight'] = c2_weight_g
+    graph[start_node][end_node][key]['c3_weight'] = c3_weight_g

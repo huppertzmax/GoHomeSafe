@@ -2,7 +2,9 @@ import osmnx as ox
 from cctv import *
 import os
 
-CCTV_WEIGHT = 0.75
+CCTV_WEIGHT_C1 = 0.75
+CCTV_WEIGHT_C2 = 0.5
+CCTV_WEIGHT_C3 = 0.1
 CCTV_FILE_PATH = '../cctv_edges.pkl'
 
 
@@ -47,9 +49,15 @@ def add_new_cctv_locations(graph, cctvs_file, cctvs_new):
 
 def adjust_cctv_weights(graph, cctvs):
     for cctv in cctvs:
-        length = graph[cctv.get('start_node')][cctv.get('end_node')][cctv.get('key')]['length']
-        c_weight = length * CCTV_WEIGHT
-        graph[cctv.get('start_node')][cctv.get('end_node')][cctv.get('key')]['c_weight'] = c_weight
+        change_weights(
+            graph=graph,
+            start_node=cctv.get('start_node'),
+            end_node=cctv.get('end_node'),
+            key=cctv.get('key'),
+            c1_weight=CCTV_WEIGHT_C1,
+            c2_weight=CCTV_WEIGHT_C2,
+            c3_weight=CCTV_WEIGHT_C3
+        )
         graph[cctv.get('start_node')][cctv.get('end_node')][cctv.get('key')]['reason'] = "cctv"
 
 

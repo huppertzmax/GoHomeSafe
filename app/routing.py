@@ -41,11 +41,27 @@ def get_nodes(graph, coordinates):
 def calculate_route_stats(graph, route):
     length = 0
     duration = 0
+    cctv = 0
+    sensors_good = 0
+    sensors_bad = 0
+    reasons = []
     for f,t in zip(route[1:], route[:-1]):
         data = graph.get_edge_data(f, t)[0]
         length += data.get('length')
         duration += data.get('walking_time')
-    return length, duration
+        if 'reason' in data:
+            reasons.append({
+                "start_node": f,
+                "end_node": t,
+                "reason": data.get('reason')
+            })
+            if data.get('reason') == "loud":
+                sensors_good += 1
+            elif data.get('reason') == "silent":
+                sensors_bad += 1
+            elif data.get('reason') == "cctv":
+                cctv += 1
+    return length, duration, cctv, sensors_good, sensors_bad, reasons
 
 
 def calculate_route(graph, start, end, fastest):
@@ -54,8 +70,17 @@ def calculate_route(graph, start, end, fastest):
     if fastest:
         route = nx.shortest_path(graph, start, end, weight="length")
     else:
-        route = nx.shortest_path(graph, start, end, weight="c_weight")
+        route = nx.shortest_path(graph, start, end, weight="c1_weight")
     coordinates = densify_route(graph, route)
-    length, duration = calculate_route_stats(graph, route)
+    length, duration, cctv, sensors_good, sensors_bad, reasons = calculate_route_stats(graph, route)
     route_type = 'fastest' if fastest else 'safest'
-    return {"coordinates": coordinates, "length": length, "duration": duration, "type": route_type}
+    return {
+        "coordinates": coordinates,
+        "length": length,
+        "duration": duration,
+        "type": route_type,
+        "cctv": cctv,
+        "sensors_good": sensors_good,
+        "sensors_bad": sensors_bad,
+        "reasons": reasons
+    }
