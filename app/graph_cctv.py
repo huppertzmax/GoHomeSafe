@@ -29,6 +29,7 @@ def adjust_graph_weights_cctv(graph):
     print("Weights for " + str(len(cctvs)) + " edges were adjusted based on cctv locations")
     print("----------- END CCTV -----------")
 
+
 def find_not_stored_cctv_locations(cctvs_file, cctvs_api):
     cctvs_file = {item['cctv'] for item in cctvs_file}
     cctvs_new = [cctv for cctv in cctvs_api if cctv not in cctvs_file]
