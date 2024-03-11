@@ -16,6 +16,7 @@ def startup():
     print("Graph initialization started")
     global graph
     global SENSOR_MIN
+    # TODO rename variable
     SENSOR_MIN =  0.2
     file_path = '../graph_daejeon.pkl'
 
@@ -31,66 +32,55 @@ def startup():
     print("Graph initialization completed")
 
 
-# @TODO delete for production
-@app.route("/")
-def hello_world():
-    return "<p>Welcome to GoHomeSafe!</p>"
-
-
 @app.route("/route")
 def routing(fastest=False):
     args = request.args
     if validate_args(args):
-        route_coordinates = calculate_route(graph,
-                                            [float(args.get('start_lon')), float(args.get('start_lat'))],
-                                            [float(args.get('end_lon')), float(args.get('end_lat'))],
-                                            fastest)
+        start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
+        route_coordinates = calculate_route(graph, start_coordinates, end_coordinates, fastest)
         return route_coordinates
     else:
-        print("Error: arguments not correct")
-        return "Error"
+        raise ValueError("Error while trying to calculate route due to invalid arguments")
 
 
 @app.route("/route/fastest")
 def routing_fastest():
-    return routing(True)
-
-
-@app.route("/cctv/all")
-def cctv_locations_all():
-    return get_cctv_locations_all()
+    return routing(fastest=True)
 
 
 @app.route("/cctv/area")
-def cctv_locations_area():
+def get_cctv_locations_in_area():
     args = request.args
     if validate_args(args):
-        return get_cctv_locations_area(float(args.get('start_lat')), float(args.get('start_lon')),
-                                       float(args.get('end_lat')), float(args.get('end_lon')))
+        start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
+        # TODO maybe change back lat lon order
+        start_lon, start_lat = start_coordinates
+        end_lon, end_lat = end_coordinates
+        return get_sensor_locations_area(start_lat, start_lon, end_lat, end_lon, SENSOR_MIN)
     else:
-        print("Error: arguments not correct")
-        return "Error"
+        raise ValueError("Error while trying to get all cctv locations in an area due to invalid arguments")
 
 
 @app.route("/sensor/area")
-def sensor_locations_area():
+def get_sensor_locations_in_area():
     args = request.args
     if validate_args(args):
-        return get_sensor_locations_area(float(args.get('start_lat')), float(args.get('start_lon')),
-                                         float(args.get('end_lat')), float(args.get('end_lon')), SENSOR_MIN)
+        start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
+        start_lon, start_lat = start_coordinates
+        end_lon, end_lat = end_coordinates
+        return get_sensor_locations_area(start_lat, start_lon, end_lat, end_lon, SENSOR_MIN)
     else:
-        print("Error: arguments not correct")
-        return "Error"
+        raise ValueError("Error while trying to get all sensor locations in an area due to invalid arguments")
+
+
+@app.route("/cctv/all")
+def get_all_cctv_locations():
+    return get_cctv_locations_all()
 
 
 @app.route("/sensor/all")
-def sensor_locations_all():
+def get_all_sensor_locations():
     return get_sensor_locations_all(SENSOR_MIN)
-
-
-@app.route("/test")
-def test_sensor():
-    return {"msg": "test"}
 
 
 with app.app_context():
