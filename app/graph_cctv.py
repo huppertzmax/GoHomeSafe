@@ -50,7 +50,7 @@ def add_new_cctv_locations(graph, cctvs_file, cctvs_new):
 
 def adjust_cctv_weights(graph, cctvs):
     for cctv in cctvs:
-        change_weights(
+        change_weights_between_nodes(
             graph=graph,
             start_node=cctv.get('start_node'),
             end_node=cctv.get('end_node'),

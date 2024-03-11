@@ -23,7 +23,7 @@ def startup():
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
             graph = pickle.load(f)
-        adjust_weights(graph, SENSOR_MIN)
+        initialize_custom_graph_attributes(graph, SENSOR_MIN)
     else:
         print("Graph file will be created")
         graph = initialize_graph(SENSOR_MIN)
@@ -33,9 +33,9 @@ def startup():
 
 
 @app.route("/route")
-def routing(fastest=False):
+def get_route(fastest=False):
     args = request.args
-    if validate_args(args):
+    if validate_coordinate_args(args):
         start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
         route_coordinates = calculate_route(graph, start_coordinates, end_coordinates, fastest)
         return route_coordinates
@@ -44,14 +44,14 @@ def routing(fastest=False):
 
 
 @app.route("/route/fastest")
-def routing_fastest():
-    return routing(fastest=True)
+def get_fastest_route():
+    return get_route(fastest=True)
 
 
 @app.route("/cctv/area")
 def get_cctv_locations_in_area():
     args = request.args
-    if validate_args(args):
+    if validate_coordinate_args(args):
         start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
         # TODO maybe change back lat lon order
         start_lon, start_lat = start_coordinates
@@ -64,7 +64,7 @@ def get_cctv_locations_in_area():
 @app.route("/sensor/area")
 def get_sensor_locations_in_area():
     args = request.args
-    if validate_args(args):
+    if validate_coordinate_args(args):
         start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
         start_lon, start_lat = start_coordinates
         end_lon, end_lat = end_coordinates

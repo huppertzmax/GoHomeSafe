@@ -26,7 +26,7 @@ def adjust_sensor_weights(graph, sensors, sensor_min):
     for sensor in sensors:
         sensor_value = get_sensor_value(sensor.get('sensor_id'))
         if sensor_value > sensor_min:
-            change_weights(
+            change_weights_between_nodes(
                 graph=graph,
                 start_node=sensor.get('start_node'),
                 end_node=sensor.get('end_node'),
@@ -38,7 +38,7 @@ def adjust_sensor_weights(graph, sensors, sensor_min):
             reason = "loud"
             count_pos += 1
         else:
-            change_weights(
+            change_weights_between_nodes(
                 graph=graph,
                 start_node=sensor.get('start_node'),
                 end_node=sensor.get('end_node'),

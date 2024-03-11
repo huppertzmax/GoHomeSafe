@@ -1,6 +1,4 @@
-import requests
 from utils import *
-import random
 import uuid
 import pickle
 from graph_sensor import *
@@ -22,8 +20,8 @@ def get_sensor_locations_all(sensor_min):
 # @TODO fix bug with sensor min
 def get_sensor_locations_area(start_lat, start_lon, end_lat, end_lon, sensor_min):
     sensor_locations = get_sensor_locations_all(sensor_min)
-    middle, distance = get_middle_and_distance(start_lat, start_lon, end_lat, end_lon)
-    sensor_locations = filter_in_area(sensor_locations, middle, distance)
+    middle, distance = get_middle_and_distance_based_on_two_points(start_lat, start_lon, end_lat, end_lon)
+    sensor_locations = filter_points_in_distance_of_middle_point(sensor_locations, middle, distance)
     return sensor_locations
 
 
@@ -50,6 +48,8 @@ def is_safe(sensor, sensor_min):
 
 def get_sensor_value(sensor_id):
     # @TODO change to requesting actual value
+    if sensor_id == uuid.UUID('d0f352a8-1134-41e7-a5f6-48bb7d6b25ce'):
+        return 0.1
     return random.random()
 
 

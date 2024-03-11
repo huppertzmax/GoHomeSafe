@@ -21,8 +21,8 @@ def get_cctv_locations_all():
 
 def get_cctv_locations_area(start_lat, start_lon, end_lat, end_lon):
     cctv_locations = get_cctv_locations_all()
-    middle, distance = get_middle_and_distance(start_lat, start_lon, end_lat, end_lon)
-    cctv_locations = filter_in_area(cctv_locations, middle, distance)
+    middle, distance = get_middle_and_distance_based_on_two_points(start_lat, start_lon, end_lat, end_lon)
+    cctv_locations = filter_points_in_distance_of_middle_point(cctv_locations, middle, distance)
     return cctv_locations
 
 
