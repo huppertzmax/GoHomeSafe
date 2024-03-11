@@ -44,8 +44,6 @@ def calculate_route_stats(graph, route):
     length = 0
     duration = 0
     cctv = 0
-    sensors_good = 0
-    sensors_bad = 0
     reasons = []
     for f,t in zip(route[1:], route[:-1]):
         data = graph.get_edge_data(f, t)[0]
@@ -57,13 +55,9 @@ def calculate_route_stats(graph, route):
                 "end_node": t,
                 "reason": data.get('reason')
             })
-            if data.get('reason') == "loud":
-                sensors_good += 1
-            elif data.get('reason') == "silent":
-                sensors_bad += 1
-            elif data.get('reason') == "cctv":
+            if data.get('reason') == "cctv":
                 cctv += 1
-    return length, duration, cctv, sensors_good, sensors_bad, reasons
+    return length, duration, cctv, reasons
 
 
 def calculate_route(graph, start, end, fastest):
@@ -78,7 +72,7 @@ def calculate_route(graph, start, end, fastest):
         route_c3 = nx.shortest_path(graph, start, end, weight="c3_weight")
         route = select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3)
     coordinates = densify_route(graph, route)
-    length, duration, cctv, sensors_good, sensors_bad, reasons = calculate_route_stats(graph, route)
+    length, duration, cctv, reasons = calculate_route_stats(graph, route)
     route_type = 'fastest' if fastest else 'safest'
     return {
         "coordinates": coordinates,
@@ -86,8 +80,6 @@ def calculate_route(graph, start, end, fastest):
         "duration": duration,
         "type": route_type,
         "cctv": cctv,
-        "sensors_good": sensors_good,
-        "sensors_bad": sensors_bad,
         "reasons": reasons
     }
 
@@ -108,17 +100,14 @@ def select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3):
 
 
 def calculate_route_score(graph, route_fastest, route_safe):
-    length_fastest, duration_fastest, cctv_fastest, sensors_good_fastest, sensors_bad_fastest, reasons_fastest = calculate_route_stats(graph, route_fastest)
-    length, duration, cctv, sensors_good, sensors_bad, reasons = calculate_route_stats(graph, route_safe)
+    length_fastest, duration_fastest, cctv_fastest, reasons_fastest = calculate_route_stats(graph, route_fastest)
+    length, duration, cctv, reasons = calculate_route_stats(graph, route_safe)
     length_dif = length - length_fastest
     length_change = length_dif/length_fastest
     if length_change > LENGTH_TOLERANCE:
         return 0
-    cctv_dif = cctv - cctv_fastest
-    sensors_good_dif = sensors_good - sensors_good_fastest
-    sensors_bad_dif = sensors_bad_fastest - sensors_bad
-    score_cctv_sensors = cctv_dif + sensors_good_dif + sensors_bad_dif
-    if score_cctv_sensors < 1:
+    score_cctv = cctv - cctv_fastest
+    if score_cctv < 1:
         return 0
     else:
-        return length_dif / score_cctv_sensors
+        return length_dif / score_cctv
