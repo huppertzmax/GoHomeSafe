@@ -9,25 +9,46 @@ CCTV_FILE_PATH = '../cctv_edges.pkl'
 
 
 def adjust_graph_weights_cctv(graph):
+    # TODO clean up logging
     print("----------- CCTV -----------")
-    cctvs_file = get_cctv_locations_file(graph)
-    cctvs_api = get_cctv_locations_all()
-    cctvs_new = find_not_stored_cctv_locations(cctvs_file, cctvs_api)
-    print("There are " + str(len(cctvs_new)) + " new CCTV locations")
-    cctvs_old = find_stored_not_existing_cctv_locations(cctvs_file, cctvs_api)
-    print("There are " + str(len(cctvs_old)) + " old CCTV locations which are not longer existing")
 
-    # @TODO add functionality
-    # remove_old_cctv_locations(graph, cctvs_old)
-    if len(cctvs_new) > 0:
-        cctvs = add_new_cctv_locations(graph, cctvs_file, cctvs_new)
-        store_cctv_locations(cctvs)
-        print("Stored " + str(len(cctvs)) + " CCTV edges in " + CCTV_FILE_PATH)
-    cctvs = cctvs_file
+    cctv_file_data = get_cctv_locations_file(graph)
+    cctv_api_data = get_cctv_locations_all()
+
+    new_cctv_locations = find_not_stored_cctv_locations(cctv_file_data, cctv_api_data)
+    no_longer_run_cctv_locations = find_stored_but_no_longer_running_cctv_locations(cctv_file_data, cctv_api_data)
+    print("There are " + str(len(new_cctv_locations)) + " new CCTV locations, which are not yet stored")
+    print("There are " + str(len(no_longer_run_cctv_locations)) + "old CCTV locations stored, which are no longer "
+                                                                  "running")
+
+    # @TODO add functionality: removing no longer running CCTV locations form local file
+    # remove_old_cctv_locations(graph, no_longer_run_cctv_locations)
+    cctvs = add_and_store_new_cctv_locations(graph, cctv_file_data, new_cctv_locations)
 
     adjust_cctv_weights(graph, cctvs)
     print("Weights for " + str(len(cctvs)) + " edges were adjusted based on cctv locations")
     print("----------- END CCTV -----------")
+
+
+def get_cctv_locations_file(graph):
+    if os.path.exists(CCTV_FILE_PATH):
+        cctv_edges = load_cctv_locations()
+    else:
+        print("Creation of CCTV locations file started")
+        cctv_edges = compute_osm_edge_of_cctvs(graph, get_cctv_locations_all())
+        store_cctv_locations(cctv_edges)
+        print("Creation of CCTV locations file completed")
+    print("Number of CCTV cameras: ", len(cctv_edges))
+    return cctv_edges
+
+
+def add_and_store_new_cctv_locations(graph, cctvs_file, cctvs_new):
+    if len(cctvs_new) > 0:
+        cctvs_new = compute_osm_edge_of_cctvs(graph, cctvs_new)
+        cctvs_file.append(cctvs_new)
+        store_cctv_locations(cctvs_file)
+        print("Stored " + str(len(cctvs_file)) + " CCTV edges in " + CCTV_FILE_PATH)
+    return cctvs_file
 
 
 def find_not_stored_cctv_locations(cctvs_file, cctvs_api):
@@ -36,16 +57,10 @@ def find_not_stored_cctv_locations(cctvs_file, cctvs_api):
     return cctvs_new
 
 
-def find_stored_not_existing_cctv_locations(cctvs_file, cctvs_api):
+def find_stored_but_no_longer_running_cctv_locations(cctvs_file, cctvs_api):
     cctvs_file = {item['cctv'] for item in cctvs_file}
     cctvs_old = [cctv for cctv in cctvs_file if cctv not in cctvs_api]
     return cctvs_old
-
-
-def add_new_cctv_locations(graph, cctvs_file, cctvs_new):
-    cctvs_new = compute_cctv_edges(graph, cctvs_new)
-    cctvs_file.append(cctvs_new)
-    return cctvs_file
 
 
 def adjust_cctv_weights(graph, cctvs):
@@ -62,20 +77,7 @@ def adjust_cctv_weights(graph, cctvs):
         graph[cctv.get('start_node')][cctv.get('end_node')][cctv.get('key')]['reason'] = "cctv"
 
 
-def get_cctv_locations_file(graph):
-    if os.path.exists(CCTV_FILE_PATH):
-        cctv_edges = load_cctv_locations()
-    else:
-        print("Computing of edges started")
-        cctv_edges = compute_cctv_edges(graph, get_cctv_locations_all())
-        store_cctv_locations(cctv_edges)
-        print("Computing of edges completed")
-    print(len(cctv_edges))
-    print(cctv_edges)
-    return cctv_edges
-
-
-def compute_cctv_edges(graph, cctvs):
+def compute_osm_edge_of_cctvs(graph, cctvs):
     count = 0
     cctv_edges = []
     for cctv in cctvs:
