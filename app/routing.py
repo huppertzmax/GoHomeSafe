@@ -4,8 +4,38 @@ import networkx as nx
 LENGTH_TOLERANCE = 0.2
 
 
-def densify_coordinates(graph, route):
-    dense_coordinates = []
+def calculate_route(graph, start, end, fastest):
+    start = get_nodes(graph, start)
+    end = get_nodes(graph, end)
+    route_fastest = nx.shortest_path(graph, start, end, weight="length")
+    if fastest:
+        route = route_fastest
+    else:
+        route_c1 = nx.shortest_path(graph, start, end, weight="c1_weight")
+        route_c2 = nx.shortest_path(graph, start, end, weight="c2_weight")
+        route_c3 = nx.shortest_path(graph, start, end, weight="c3_weight")
+        route = select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3)
+    coordinates = interpolate_coordinates_of_route(graph, route)
+    length, duration, cctv, reasons = calculate_route_stats(graph, route)
+    route_type = 'fastest' if fastest else 'safest'
+    return {
+        "coordinates": coordinates,
+        "length": length,
+        "duration": duration,
+        "type": route_type,
+        "cctv": cctv,
+        "reasons": reasons
+    }
+
+
+def interpolate_coordinates_of_route(graph, route):
+    """
+        This function interpolates the coordinates between all nodes of a given route
+    :param graph: ox graph on which the route is located
+    :param route: list of osm nodes in the graph representing the route
+    :return: list of all coordinates between all nodes of the route
+    """
+    interpolated_coordinates = []
     for n1, n2 in zip(route[:-1], route[1:]):
         lon = graph.nodes[n1]['x']
         lat = graph.nodes[n1]['y']
@@ -14,24 +44,23 @@ def densify_coordinates(graph, route):
         if data[0].get('geometry') is not None:
             lats, lons = data[0]['geometry'].xy
             for x, y in zip(list(lats), list(lons)):
-                dense_coordinates.append([x, y])
+                interpolated_coordinates.append([x, y])
         else:
-            dense_coordinates.append([lon, lat])
+            interpolated_coordinates.append([lon, lat])
     lon = graph.nodes[route[-1]]['x']
     lat = graph.nodes[route[-1]]['y']
-    dense_coordinates.append([lon, lat])
-    return dense_coordinates
+    interpolated_coordinates.append([lon, lat])
+    return remove_duplicates_of_interpolated_coordinates(interpolated_coordinates)
 
 
-def densify_route(graph, route):
-    dense_coordinates = densify_coordinates(graph, route)
+def remove_duplicates_of_interpolated_coordinates(interpolated_coordinates):
     route_coordinates = []
-    last_cord = None
-    while len(dense_coordinates) > 0:
-        current_cord = dense_coordinates.pop()
-        if current_cord != last_cord:
-            route_coordinates.append(current_cord)
-        last_cord = current_cord
+    last_coordinate = None
+    while len(interpolated_coordinates) > 0:
+        current_coordinate = interpolated_coordinates.pop()
+        if current_coordinate != last_coordinate:
+            route_coordinates.append(current_coordinate)
+        last_coordinate = current_coordinate
     route_coordinates.reverse()
     return route_coordinates
 
@@ -45,43 +74,19 @@ def calculate_route_stats(graph, route):
     duration = 0
     cctv = 0
     reasons = []
-    for f,t in zip(route[1:], route[:-1]):
-        data = graph.get_edge_data(f, t)[0]
+    for node1, node2 in zip(route[1:], route[:-1]):
+        data = graph.get_edge_data(node1, node2)[0]
         length += data.get('length')
         duration += data.get('walking_time')
         if 'reason' in data:
             reasons.append({
-                "start_node": f,
-                "end_node": t,
+                "start_node": node1,
+                "end_node": node2,
                 "reason": data.get('reason')
             })
             if data.get('reason') == "cctv":
                 cctv += 1
     return length, duration, cctv, reasons
-
-
-def calculate_route(graph, start, end, fastest):
-    start = get_nodes(graph, start)
-    end = get_nodes(graph, end)
-    route_fastest = nx.shortest_path(graph, start, end, weight="length")
-    if fastest:
-        route = route_fastest
-    else:
-        route_c1 = nx.shortest_path(graph, start, end, weight="c1_weight")
-        route_c2 = nx.shortest_path(graph, start, end, weight="c2_weight")
-        route_c3 = nx.shortest_path(graph, start, end, weight="c3_weight")
-        route = select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3)
-    coordinates = densify_route(graph, route)
-    length, duration, cctv, reasons = calculate_route_stats(graph, route)
-    route_type = 'fastest' if fastest else 'safest'
-    return {
-        "coordinates": coordinates,
-        "length": length,
-        "duration": duration,
-        "type": route_type,
-        "cctv": cctv,
-        "reasons": reasons
-    }
 
 
 def select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3):

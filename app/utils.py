@@ -47,7 +47,6 @@ def change_weights_between_nodes(graph, start_node, end_node, key, c1_weight, c2
 
 
 def extract_start_and_end_coordinates(args):
-    # TODO maybe change lon and lat order
     start_coordinate = [float(args.get('start_lon')), float(args.get('start_lat'))]
     end_coordinate = [float(args.get('end_lon')), float(args.get('end_lat'))]
     return start_coordinate, end_coordinate

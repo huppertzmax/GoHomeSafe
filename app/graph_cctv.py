@@ -9,7 +9,6 @@ CCTV_FILE_PATH = '../cctv_edges.pkl'
 
 
 def adjust_graph_weights_cctv(graph):
-    # TODO clean up logging
     print("----------- CCTV -----------")
 
     cctv_file_data = get_cctv_locations_file(graph)
@@ -17,11 +16,11 @@ def adjust_graph_weights_cctv(graph):
 
     new_cctv_locations = find_not_stored_cctv_locations(cctv_file_data, cctv_api_data)
     no_longer_run_cctv_locations = find_stored_but_no_longer_running_cctv_locations(cctv_file_data, cctv_api_data)
+
     print("There are " + str(len(new_cctv_locations)) + " new CCTV locations, which are not yet stored")
     print("There are " + str(len(no_longer_run_cctv_locations)) + "old CCTV locations stored, which are no longer "
                                                                   "running")
-
-    # @TODO add functionality: removing no longer running CCTV locations form local file
+    # @TODO add functionality: removing of no longer running CCTV locations form local file
     # remove_old_cctv_locations(graph, no_longer_run_cctv_locations)
     cctvs = add_and_store_new_cctv_locations(graph, cctv_file_data, new_cctv_locations)
 
@@ -32,19 +31,19 @@ def adjust_graph_weights_cctv(graph):
 
 def get_cctv_locations_file(graph):
     if os.path.exists(CCTV_FILE_PATH):
-        cctv_edges = load_cctv_locations()
+        cctv_locations = load_cctv_locations()
     else:
         print("Creation of CCTV locations file started")
-        cctv_edges = compute_osm_edge_of_cctvs(graph, get_cctv_locations_all())
-        store_cctv_locations(cctv_edges)
+        cctv_locations = compute_osm_edge_of_cctv_locations(graph, get_cctv_locations_all())
+        store_cctv_locations(cctv_locations)
         print("Creation of CCTV locations file completed")
-    print("Number of CCTV cameras: ", len(cctv_edges))
-    return cctv_edges
+    print("Number of CCTV cameras: ", len(cctv_locations))
+    return cctv_locations
 
 
 def add_and_store_new_cctv_locations(graph, cctvs_file, cctvs_new):
     if len(cctvs_new) > 0:
-        cctvs_new = compute_osm_edge_of_cctvs(graph, cctvs_new)
+        cctvs_new = compute_osm_edge_of_cctv_locations(graph, cctvs_new)
         cctvs_file.append(cctvs_new)
         store_cctv_locations(cctvs_file)
         print("Stored " + str(len(cctvs_file)) + " CCTV edges in " + CCTV_FILE_PATH)
@@ -77,14 +76,13 @@ def adjust_cctv_weights(graph, cctvs):
         graph[cctv.get('start_node')][cctv.get('end_node')][cctv.get('key')]['reason'] = "cctv"
 
 
-def compute_osm_edge_of_cctvs(graph, cctvs):
+def compute_osm_edge_of_cctv_locations(graph, cctv_locations):
     count = 0
     cctv_edges = []
-    for cctv in cctvs:
+    for cctv in cctv_locations:
         u, v, k = ox.distance.nearest_edges(graph, cctv[1], cctv[0])
         data = graph[u][v][k]
         cctv_edges.append({"cctv": cctv, "start_node": u, "end_node": v,
                            "key": k, "osmid": data.get('osmid')})
         count = count + 1
-        print(count)
     return cctv_edges

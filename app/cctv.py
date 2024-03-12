@@ -16,19 +16,19 @@ def request_cctv_locations():
 
 
 def get_cctv_locations_all():
-    return list_cctv_coordinates(request_cctv_locations())
+    return extract_cctv_coordinates_from_request(request_cctv_locations())
 
 
 def get_cctv_locations_area(start_lat, start_lon, end_lat, end_lon):
     cctv_locations = get_cctv_locations_all()
     middle, distance = get_middle_and_distance_based_on_two_points(start_lat, start_lon, end_lat, end_lon)
-    cctv_locations = filter_points_in_distance_of_middle_point(cctv_locations, middle, distance)
-    return cctv_locations
+    cctv_locations_in_area = filter_points_in_distance_of_middle_point(cctv_locations, middle, distance)
+    return cctv_locations_in_area
 
 
-def list_cctv_coordinates(data):
+def extract_cctv_coordinates_from_request(response_data):
     cctv_coordinates = []
-    response_items = data.get('items')
+    response_items = response_data.get('items')
     for element in response_items:
         cctv_coordinates.append((element.get("la"), element.get("lo")))
     return cctv_coordinates
@@ -41,5 +41,5 @@ def store_cctv_locations(cctv_locations):
 
 def load_cctv_locations():
     with open(CCTV_FILE_PATH, 'rb') as f:
-        cctv_edges = pickle.load(f)
-    return cctv_edges
+        cctv_locations = pickle.load(f)
+    return cctv_locations
