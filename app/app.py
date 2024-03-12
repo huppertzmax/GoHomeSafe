@@ -12,6 +12,11 @@ cors = CORS(app)
 
 
 def startup():
+    """
+        Function prepares the graph of the city in which the routes get calculated. This either happens through loading
+        and updating an existing local file or newly initialising a local file.
+    :return: ox graph of Daejeon
+    """
     print("Graph initialization started")
     global graph
     graph_file_path = '../graph_daejeon.pkl'
@@ -30,6 +35,12 @@ def startup():
 
 @app.route("/route")
 def get_route(fastest=False):
+    """
+        Endpoint to get the safest route from one point to another within the graph
+    :param fastest: if fastest is False (default) the safest route will be returned otherwise the fastest
+    :return: route in json format containing the following data (coordinates, length (meter),
+    duration (minutes), type [safest, fastest], cctv (number of locations based by), reasons
+    """
     args = request.args
     if validate_coordinate_args(args):
         start_coordinates, end_coordinates = extract_start_and_end_coordinates(args)
