@@ -6,9 +6,12 @@ from cctv import *
 from utils import *
 import os
 import pickle
+import logging
 
 app = Flask('gohomesafe')
 cors = CORS(app)
+app.logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def startup():

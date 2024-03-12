@@ -2,7 +2,6 @@ import requests
 from utils import *
 import pickle
 
-
 CCTV_FILE_PATH = '../cctv_edges.pkl'
 
 
@@ -12,7 +11,8 @@ def request_cctv_locations():
     if response.status_code == 200:
         return response.json().get('response').get('body')
     else:
-        print("Error: CCTV data could not be loaded")
+        raise ConnectionError("Error: CCTV data could not be loaded, "
+                              "response code was not 200 but was {}".format(response.status_code))
 
 
 def get_cctv_locations_all():

@@ -18,7 +18,7 @@ def adjust_graph_weights_cctv(graph):
     no_longer_run_cctv_locations = find_stored_but_no_longer_running_cctv_locations(cctv_file_data, cctv_api_data)
 
     print("There are " + str(len(new_cctv_locations)) + " new CCTV locations, which are not yet stored")
-    print("There are " + str(len(no_longer_run_cctv_locations)) + "old CCTV locations stored, which are no longer "
+    print("There are " + str(len(no_longer_run_cctv_locations)) + " old CCTV locations stored, which are no longer "
                                                                   "running")
     # @TODO add functionality: removing of no longer running CCTV locations form local file
     # remove_old_cctv_locations(graph, no_longer_run_cctv_locations)
