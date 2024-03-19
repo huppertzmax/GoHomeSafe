@@ -32,7 +32,6 @@ def validate_coordinate_args(args):
 
 
 def change_weights_between_nodes(graph, start_node, end_node, key, c1_weight, c2_weight, c3_weight):
-    # TODO maybe get rid of the 3 weights and only use the best
     c1_weight_g = graph[start_node][end_node][key]['c1_weight']
     c2_weight_g = graph[start_node][end_node][key]['c2_weight']
     c3_weight_g = graph[start_node][end_node][key]['c3_weight']
