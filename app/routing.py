@@ -90,29 +90,39 @@ def calculate_route_stats(graph, route):
 
 
 def select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3):
-    score_c1 = calculate_route_score(graph, route_fastest, route_c1)
-    score_c2 = calculate_route_score(graph, route_fastest, route_c2)
-    score_c3 = calculate_route_score(graph, route_fastest, route_c3)
-    print("Scores calculated: c1: " + str(score_c1) + " c2: " + str(score_c2) + " c3: "+ str(score_c3))
-    if score_c1 >= score_c2 and score_c1 >= score_c3:
-        print("Route based on weights of c1")
-        return route_c1
-    elif score_c2 >= score_c1 and score_c2 >= score_c3:
-        print("Route based on weights of c2")
-        return route_c2
-    print("Route based on weights of c3")
-    return route_c3
-
-
-def calculate_route_score(graph, route_fastest, route_safe):
     length_fastest, duration_fastest, cctv_fastest, reasons_fastest = calculate_route_stats(graph, route_fastest)
+
+    score_c1 = calculate_route_score(graph, route_c1, length_fastest, cctv_fastest)
+    score_c2 = calculate_route_score(graph, route_c2, length_fastest, cctv_fastest)
+    score_c3 = calculate_route_score(graph, route_c3, length_fastest, cctv_fastest)
+
+    print("Scores calculated: c1: " + str(score_c1) + " c2: " + str(score_c2) + " c3: "+ str(score_c3))
+    if score_c1 == 1 and score_c2 == 1 and score_c3 == 1:
+        # TODO same route for both fastest and safest feature in UI
+        return route_fastest
+    else:
+        min_score = min(score_c1, score_c2, score_c3)
+        if abs(min_score - score_c1) < 1e-9:
+            return route_c1
+        elif abs(min_score - score_c2) < 1e-9:
+            return route_c2
+        else:
+            return route_c3
+
+
+def calculate_route_score(graph, route_safe, length_fastest, cctv_fastest):
     length, duration, cctv, reasons = calculate_route_stats(graph, route_safe)
+
     length_dif = length - length_fastest
     length_change = length_dif/length_fastest
+
+    # maximum of 20% more length
     if length_change > LENGTH_TOLERANCE:
-        return 0
+        return 1
+
     score_cctv = cctv - cctv_fastest
+    # no safer route with less cctv than fast route
     if score_cctv < 1:
-        return 0
-    else:
-        return length_dif / score_cctv
+        return 1
+
+    return length_change / score_cctv
