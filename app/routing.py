@@ -90,15 +90,22 @@ def calculate_route_stats(graph, route):
 
 
 def select_safest_route(graph, route_fastest, route_c1, route_c2, route_c3):
+    """
+        The application currently uses different custom weights c1, c2, and c3 with which the existence of cctv cameras
+    on an edge in the graph can be differently weighted. To receive the safest route this function selects the route
+    calculated with one of customs weights c1, c2, and c3 that has the lowest score, which is calculated by a custom
+    scoring function considering the length distance and the change in the amount of cctv cameras on the route compared
+    to the fastest route.
+    :return: The safest route or the fastest route if all the safe routes are not safer
+    """
     length_fastest, duration_fastest, cctv_fastest, reasons_fastest = calculate_route_stats(graph, route_fastest)
 
     score_c1 = calculate_route_score(graph, route_c1, length_fastest, cctv_fastest)
     score_c2 = calculate_route_score(graph, route_c2, length_fastest, cctv_fastest)
     score_c3 = calculate_route_score(graph, route_c3, length_fastest, cctv_fastest)
 
-    print("Scores calculated: c1: " + str(score_c1) + " c2: " + str(score_c2) + " c3: "+ str(score_c3))
+    print("Scores calculated: c1: " + str(score_c1) + " c2: " + str(score_c2) + " c3: " + str(score_c3))
     if score_c1 == 1 and score_c2 == 1 and score_c3 == 1:
-        # TODO same route for both fastest and safest feature in UI
         return route_fastest
     else:
         min_score = min(score_c1, score_c2, score_c3)
