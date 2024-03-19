@@ -1,0 +1,6 @@
+Flask==3.0.2
+Flask_Cors==4.0.0
+geopy==2.4.1
+networkx==2.8.7
+osmnx==1.2.2
+Requests==2.31.0
