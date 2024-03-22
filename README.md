@@ -53,3 +53,6 @@ potentially safer.
 
 ## Future Work 
 Currently the routes can only be calculated in Daejeon. The next step therefore is to extend this project to more cities. 
+
+## Images of GoHomeSafe Mobile 
+![Homescreen](images/banner.png)
