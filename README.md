@@ -14,9 +14,12 @@ The server-side of GoHomeSafe is a Python Flask server.
 
 Follow the following steps to install and run the server: 
 
-1. Install all the requirements for the project: `pip install -r requirements.txt`
-2. Navigate to GoHomeSafe/app
-3. Run the application `python3 -m flask run --host=0.0.0.0`
+1. Make sure you have Python installed on your machine 
+2. Clone the repository to your machine
+3. Navigate to the project `GoHomeSafe`
+4. Install all the requirements for the project: `pip install -r requirements.txt`
+5. Navigate to `GoHomeSafe/app`
+6. Run the application `python3 -m flask run --host=0.0.0.0`
 --host=0.0.0.0 allows to later access the server with the mobile application on another device (remove this option if 
 the server should be only accessible via localhost) 
 
@@ -47,3 +50,6 @@ scenarios. The designation of routes as "safest" is predicated upon optimization
 of a maximum number of closed-circuit television (CCTV) cameras, while minimizing any significant increase in route length.
 It is important to note, however, that such routes are not guaranteed to be completely safe and are only considered 
 potentially safer. 
+
+## Future Work 
+Currently the routes can only be calculated in Daejeon. The next step therefore is to extend this project to more cities. 
